@@ -1,0 +1,84 @@
+﻿@page "/"
+@using BlazorTest.Data
+@inject FishMock fishMock
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+@if (fishesByType == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-dark table-hover">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Length</th>
+            <th>Weight</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var group in fishesByType)
+        {
+            <tr>
+                <th colspan="3">Type: @group.Key</th>
+            </tr>
+
+            @foreach (var fish in group.Value)
+            {
+                <div id="accordion">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                            <tr>
+                                <td>@fish.Name</td>
+                                <td>@fish.Length</td>
+                                <td>@fish.Weight</td>
+                            </tr>
+                        </h5>
+                    </div>
+                </div>
+            }
+                <tr>
+                    <td colspan="3">Total Weight: @CalculateTotalWeight(group.Value)</td>
+                </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<SurveyPrompt Title="TESTE BLAZOR" />
+
+@code {
+    private Fish[]? fishes;
+    private Dictionary<EFishType, List<Fish>>? fishesByType = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        fishes = await fishMock.GetFishAsync();
+        if (fishes != null)
+        {
+            foreach (var fish in fishes)
+            {
+                if (!fishesByType.ContainsKey(fish.Type))
+                {
+                    fishesByType.Add(fish.Type, new List<Fish>());
+                }
+                
+                fishesByType[fish.Type].Add(fish);
+            }
+        }
+    }
+
+    private float CalculateTotalWeight(List<Fish> groupFishes)
+    {
+        float totalWeight = 0;
+        foreach (var fish in groupFishes)
+        {
+            totalWeight += fish.Weight;
+        }
+        return totalWeight;
+    }
+}
