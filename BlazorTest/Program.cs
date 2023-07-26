@@ -1,4 +1,6 @@
+using BlazorTest.Context;
 using BlazorTest.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddSingleton<FishMock>();
+builder.Services.AddDbContext<MyDbContext>(options => options.UseInMemoryDatabase("DbTest"));
 
 var app = builder.Build();
 
