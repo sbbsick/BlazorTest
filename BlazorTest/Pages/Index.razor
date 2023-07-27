@@ -5,37 +5,63 @@
 
 <PageTitle>Index</PageTitle>
 
-<button  class="btn btn-primary" @onclick="AddNewFish">Add New Fish></button>
+<button  class="btn btn-danger" @onclick="AddNewFish">Add New Fish</button>
 <hr/>
 <table class="table table-dark table-hover">
     <thead>
-        <tr>
-            <th>Name</th>
-            <th>Length</th>
-            <th>Weight</th>
-        </tr>
+    <tr>
+        <th>Name</th>
+        <th>Length</th>
+        <th>Weight</th>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var group in fishesByType)
+    @foreach (var group in fishesByType)
+    {
+        <tr>
+            <th colspan="3">Type: @group.Key</th>
+        </tr>
+
+        @foreach (var fish in group.Value)
         {
             <tr>
-                <th colspan="3">Type: @group.Key</th>
-            </tr>
-            @foreach (var fish in group.Value)
-            {
-                <tr>
-                    <td>@fish.Name</td>
-                    <td>@fish.Length</td>
-                    <td>@fish.Weight</td>
-                </tr>
-            }
-            <tr>
-                <td colspan="3">Total Weight: @CalculateTotalWeight(group.Value)</td>
+                <td>@fish.Name</td>
+                <td>@fish.Length</td>
+                <td>@fish.Weight</td>
             </tr>
         }
+        <tr>
+            <td colspan="3">Total Weight: @CalculateTotalWeight(group.Value)</td>
+        </tr>
+    }
     </tbody>
 </table>
 
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong">
+    Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <SurveyPrompt Title="TESTE BLAZOR" />
 
@@ -47,7 +73,6 @@
     {
         LoadFishes();
     }
-
 
     private void LoadFishes()
     {
