@@ -1,13 +1,7 @@
-﻿using BlazorTest.Context;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace BlazorTest.Data;
+﻿namespace BlazorTest.Data;
 
 public class Fish
 {
-    [NotMapped]
-    private readonly MyDbContext _context;
-
     public Fish()
     {
         Id = Guid.NewGuid();

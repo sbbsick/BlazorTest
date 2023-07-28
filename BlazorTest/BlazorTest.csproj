@@ -14,4 +14,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.9" />
   </ItemGroup>
 
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\ModalAdd.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\ModalAdd.razor" />
+  </ItemGroup>
+
 </Project>
