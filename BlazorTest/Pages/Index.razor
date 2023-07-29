@@ -4,90 +4,76 @@
 @using BlazorTest.Components
 @inject MyDbContext dbContext
 
-<PageTitle>Index</PageTitle>
+<div class="uk-container uk-container-small">
+    <PageTitle>Lista de peixes do Lázaro.</PageTitle>
 
-<ModalAdd OnValidSubmit="@HandleAddNewFish" />
-<button  class="uk-button uk-button-danger" @onclick="AddNewFish">Add New Fish</button>
-<hr/>
-<table class="uk-table uk-table-hover uk-table-divider">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Length</th>
-        <th>Weight</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var group in fishesByType)
-    {
-        <tr>
-            <td colspan="3">
-                <button class="uk-button uk-button-default uk-margin-small-right" @onclick="() => ToggleTable(group.Key) ">
-                    @group.Key
-                </button>
-            </td>
-        </tr>
-        @if (activeFishType == group.Key)
+
+    <div class="uk-flex uk-flex-center">
+        <ModalAdd OnValidSubmit="@HandleAddNewFish" />
+    </div>
+
+    <hr class="uk-divider-icon"/>
+    <table class="uk-table uk-table-hover uk-table-divider">
+        <tbody>
+        @foreach (var group in fishesByType)
         {
-            foreach (var fish in group.Value)
+            <thead>
+            <th>
+                @if (activeFishType == group.Key)
+                {
+                    <a class="uk-icon-button" uk-icon="minus" @onclick="() => ToggleTable(group.Key)"></a>
+                    <span>&nbsp;Type: @group.Key</span>
+
+                }
+                else
+                {
+                    <a class="uk-icon-button" uk-icon="plus" @onclick="() => ToggleTable(group.Key)"></a>
+                    <span>&nbsp;Type: @group.Key</span>
+                }
+            </th>
+            </thead>
+
+
+            @if (activeFishType == group.Key)
             {
                 <tr>
-                    <td>@fish.Name</td>
-                    <td>@fish.Length</td>
-                    <td>@fish.Weight</td>
+                    <th>Name</th>
+                    <th>Lenght</th>
+                    <th>Weight</th>
+                    <th>Action</th>
+                </tr>
+
+                foreach (var fish in group.Value)
+                {
+                    <tr>
+                        <td>@fish.Name</td>
+                        <td>@fish.Length</td>
+                        <td>@fish.Weight</td>
+                        <td>
+                            <a @onclick="() => HandleDeleteFish(fish.Id) " class="uk-icon-button" uk-icon="trash"></a>
+                        </td>
+                    </tr>
+                    
+                }
+
+                <tr>
+                    <td colspan="3">Total Weight: @CalculateTotalWeight(group.Value)</td>
                 </tr>
             }
-            <tr>
-                <td colspan="3">Total Weight: @CalculateTotalWeight(group.Value)</td>
-            </tr>
         }
-    }
-    </tbody>
-</table>
+        </tbody>
+    </table>
 
-<SurveyPrompt Title="TESTE BLAZOR" />
-
+</div>
 @code {
-    private int counter = 0;
     private List<Fish>? fishes;
     private Dictionary<EFishType, List<Fish>> fishesByType = new Dictionary<EFishType, List<Fish>>();
-
-    protected override Task OnInitializedAsync()
+    
+    
+    protected override async Task OnInitializedAsync()
     {
-        LoadFishes();
-        return Task.CompletedTask;
-    }
-
-    private void LoadFishes()
-    {
+        await dbContext.SeedData();
         GetFishes();
-        if (fishes != null)
-            fishesByType = fishes
-                .GroupBy(f => f.Type)
-                .ToDictionary(f => f.Key, f => f.ToList());
-    }
-
-    private async Task AddNewFish()
-    {
-        var listFishes = new List<Fish>
-        {
-            new Fish { Name = "Trout", Length = 10, Weight = 2.8f, Type = EFishType.Freshwater },
-            new Fish { Name = "Salmon", Length = 30, Weight = 10.8f, Type = EFishType.Saltwater },
-            new Fish { Name = "Piranha", Length = 14, Weight = 6.8f, Type = EFishType.Freshwater },
-            new Fish { Name = "Pacu", Length = 20, Weight = 12.8f, Type = EFishType.Freshwater },
-            new Fish { Name = "Salmon2", Length = 10, Weight = 2.8f, Type = EFishType.Saltwater },
-        };
-        Console.WriteLine(listFishes);
-
-        dbContext.Fishes.AddRange(listFishes.ToList());
-        await dbContext.SaveChangesAsync();
-        LoadFishes();
-    }
-
-    private void GetFishes()
-    {
-        fishes = dbContext.Fishes.ToList();
-        StateHasChanged();
     }
 
     private float CalculateTotalWeight(List<Fish> groupFishes)
@@ -105,17 +91,28 @@
             activeFishType = fishType;
     }
 
+    private void GetFishes()
+    {
+        fishes = dbContext.Fishes.ToList();
+        fishesByType = fishes
+            .GroupBy(fish => fish.Type)
+            .ToDictionary(fish => fish.Key, fish => fish.ToList());
+    }
+
     private async Task HandleAddNewFish(Fish newFish)
     {
         dbContext.Fishes.Add(newFish);
 
-        if (fishesByType.ContainsKey(newFish.Type))
-        {
+        if (fishesByType.ContainsKey(newFish.Type)) 
             fishesByType[newFish.Type].Add(newFish);
-        }
         else
-        {
             fishesByType[newFish.Type] = new List<Fish> { newFish };
-        }
+    }
+
+    private async Task HandleDeleteFish(Guid fishId)
+    {
+        dbContext.DeleteFish(fishId);
+        await dbContext.SaveChangesAsync(); // Salva as mudanças no banco de dados de forma assíncrona
+        GetFishes(); // Recarrega os peixes na variável fishesByType
     }
 }
