@@ -1,5 +1,74 @@
-﻿<h3>ModalAdd</h3>
+﻿@using BlazorTest.Data
 
-@code {
-    
+
+<button class="uk-button uk-button-primary uk-margin-small-right" type="button" uk-toggle="target: #modal-add-fish">Add new fish</button>
+
+<div id="modal-add-fish" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body">
+        <h2 class="uk-modal-title uk-text-center">Add a new fish to the table.</h2>
+        <hr class="uk-divider-icon"/>
+
+        <EditForm Model="fish" @ref="myFormRef" OnValidSubmit="HandleFormSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="uk-margin">
+                <label class="uk-form-label" for="form-stacked-text">Name</label>
+                <InputText @bind-Value="fish.Name" class="uk-input"/>
+            </div>
+
+            <p class="uk-margin">
+                <label class="uk-form-label" for="form-stacked-text">Length</label>
+                <InputNumber @bind-Value="fish.Length" step="any" class="uk-input" TValue="int"/>
+            </p>
+
+            <div class="uk-margin">
+                <label class="uk-form-label" for="form-stacked-text">Weight</label>
+                <InputNumber @bind-Value="fish.Weight" step="any" class="uk-input" TValue="float"/> 
+            </div>
+
+            <div class="uk-margin">
+                <div uk-form-custom="target: > * > span:first-child">
+                    <label class="uk-form-label" for="form-stacked-text">Fish Type</label>
+                    <br/>
+                    <InputSelect @bind-Value="fish.Type" aria-label="Fish Type">
+                        <option value="">Please select a fish type...</option>
+                        @foreach (var fishType in Enum.GetValues(typeof(EFishType)))
+                        {
+                            <option value="@fishType">@fishType</option>
+                        }
+                    </InputSelect>
+                    <button class="uk-button uk-button-default" type="submit" tabindex="-1">
+                        <span></span>
+                        <span uk-icon="icon: chevron-down"></span>
+                    </button>
+                </div>
+            </div>
+
+            <p class="uk-text-right">
+                <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+                <button class="uk-button uk-button-primary" type="submit">Save</button>
+            </p>
+        </EditForm>
+    </div>
+</div>
+
+@code
+{
+    private Fish fish = new Fish();
+    private EditForm myFormRef;
+
+
+    [Parameter]
+    public EventCallback<Fish> OnValidSubmit { get; set; }
+
+    private async Task HandleFormSubmit()
+    {
+        if (myFormRef.EditContext.Validate())
+        {
+            await OnValidSubmit.InvokeAsync(fish);
+            fish = new Fish();
+            myFormRef.EditContext.MarkAsUnmodified(); // Reset the form
+        }
+    }
 }
